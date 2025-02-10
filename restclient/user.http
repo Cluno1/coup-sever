@@ -1,0 +1,8 @@
+# GET http://localhost:3000/user
+
+curl -X POST http://localhost:3000/user/login \
+-H "Content-Type: application/json" \
+-d '{
+  "account": "user2",
+  "password": "1234"
+}'
