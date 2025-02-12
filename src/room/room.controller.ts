@@ -9,6 +9,7 @@ export class RoomController {
   @Post('createRoom')
   createRoom(@Body() roomDto: CreateRoomDto) {
     const r: RoomReturnDto = this.roomService.createRoom(roomDto);
+    console.log('success create room ' + r.roomName + r.id);
     return { code: 200, message: 'Success', room: r };
   }
 

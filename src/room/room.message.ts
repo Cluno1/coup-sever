@@ -9,6 +9,9 @@ export const serverMessage = {
 export const clientMessage = {
   playerJoined: 'playerJoined',
   playerLeft: 'playerLeft',
-  failAddInRoom: 'failAddInRoom',
   playersAllReady: 'playersAllReady',
+  joinRoomFail: 'joinRoomFail',
+  leaveRoomFail: 'leaveRoomFail',
+  updatePlayers: 'updatePlayers',
+  roomIsFull: 'roomIsFull',
 };

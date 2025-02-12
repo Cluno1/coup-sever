@@ -1,3 +1,4 @@
+import { clientMessage } from './room.message';
 import { Injectable } from '@nestjs/common';
 import { Room } from './entities/room.entity';
 import { CreateRoomDto, RoomReturnDto, AddInRoomDto } from './dto/room.dto';
@@ -35,35 +36,56 @@ export class RoomService {
   }
 
   createRoom(roomDto: CreateRoomDto): RoomReturnDto {
-    debugger;
     const room = new Room(roomDto);
     room.id = this.getId(); //加入room id
     this.roomList.push(room);
     return new RoomReturnDto(room);
   }
 
-  addInRoom(addDto: AddInRoomDto): ReadyRoomUserDto[] | { error: string } {
+  addInRoom(
+    addDto: AddInRoomDto,
+  ): ReadyRoomUserDto[] | { error: string; type: string } {
     const room = this.roomList.find(
       (r) =>
         r.id === addDto.room.id &&
         (r.password == addDto.room.password || r.isPublic),
     );
     if (!room) {
-      return { error: 'Room not found or password incorrect' };
+      return {
+        error: 'Room not found or password incorrect',
+        type: clientMessage.joinRoomFail,
+      };
     }
-    debugger;
-    room.players.push(new ReadyRoomUserDto(addDto.player, false));
+
+    if (room.players.length === room.playerCount) {
+      return {
+        error: 'Room is full',
+        type: clientMessage.roomIsFull,
+      };
+    }
+    const isHave = room.players.some((p) => p.name === addDto.player.name);
+    if (!isHave) {
+      room.players.push(new ReadyRoomUserDto(addDto.player, false));
+    }
     return room.players;
   }
 
-  leaveRoom(addDto: AddInRoomDto) {
+  leaveRoom(
+    addDto: AddInRoomDto,
+  ): ReadyRoomUserDto[] | { error: string; type: string } {
     const room = this.roomList.find((r) => r.id === addDto.room.id);
     if (room) {
       room.players = room.players.filter((p) => p.name !== addDto.player.name);
       return room.players;
     } else {
-      return false;
+      return { error: 'fail to leave room', type: clientMessage.leaveRoomFail };
     }
+  }
+
+  getPlayersByRoomId(id: string) {
+    debugger;
+    const room = this.roomList.filter((room) => room.id === id)[0];
+    return room.players;
   }
 
   /**

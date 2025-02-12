@@ -33,16 +33,17 @@ export class RoomGateway {
     @MessageBody() data: AddInRoomDto,
     @ConnectedSocket() client: Socket,
   ): void {
+    console.log(data.player.name + ' want to join room' + data.room.roomName);
     const { room } = data;
     const result = this.roomService.addInRoom(data);
     if (typeof result !== 'object' || !('error' in result)) {
       client.join(room.id); // 加入房间
-      console.log('come to server广播消息');
+      console.log(data.player.name + ' join in room');
       this.server
         .to(room.id)
         .emit(clientMessage.playerJoined, { players: result });
     } else {
-      client.emit(clientMessage.failAddInRoom, result.error); // 发送失败消息
+      client.emit(result.type, result.error); // 发送失败消息
     }
   }
 
@@ -57,16 +58,30 @@ export class RoomGateway {
     @ConnectedSocket() client: Socket,
   ): void {
     const { room } = data;
-    const a = this.roomService.leaveRoom(data);
-    if (a !== false) {
+    const result = this.roomService.leaveRoom(data);
+    if (typeof result !== 'object' || !('error' in result)) {
       client.leave(room.id);
-      this.server.to(room.id).emit(clientMessage.playerLeft, { players: a });
+      console.log(data.player.name + ' leave room');
+      this.server
+        .to(room.id)
+        .emit(clientMessage.playerLeft, { players: result });
+    } else {
+      client.emit(result.type, result.error); // 发送失败消息
     }
   }
 
   @SubscribeMessage(serverMessage.setReady)
   handleReady(@MessageBody() data: AddInRoomDto) {
-    if (this.roomService.setIsReady(data, true)) {
+    const isAllReady = this.roomService.setIsReady(data, true);
+
+    console.log(data.player.name + ' set ready is ok');
+    this.server.to(data.room.id).emit(clientMessage.updatePlayers, {
+      players: this.roomService.getPlayersByRoomId(data.room.id),
+    });
+
+    if (isAllReady) {
+      //全部人都已经设置了准备好
+      console.log('all ready');
       this.server.to(data.room.id).emit(clientMessage.playersAllReady);
     }
   }
@@ -74,5 +89,9 @@ export class RoomGateway {
   @SubscribeMessage(serverMessage.setUnready)
   handleUnready(@MessageBody() data: AddInRoomDto) {
     this.roomService.setIsReady(data, false);
+    console.log(data.player.name + ' set unready is ok');
+    this.server.to(data.room.id).emit(clientMessage.updatePlayers, {
+      players: this.roomService.getPlayersByRoomId(data.room.id),
+    });
   }
 }
