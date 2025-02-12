@@ -4,6 +4,7 @@ import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AllExceptionsFilter, TransformInterceptor } from './app.filter';
+import { RoomModule } from './room/room.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AllExceptionsFilter, TransformInterceptor } from './app.filter';
       synchronize: false,
     }),
     UserModule,
+    RoomModule,
   ],
   providers: [
     {
