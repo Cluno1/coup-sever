@@ -3,11 +3,23 @@ import { Injectable } from '@nestjs/common';
 import { Room } from './entities/room.entity';
 import { CreateRoomDto, RoomReturnDto, AddInRoomDto } from './dto/room.dto';
 import { ReadyRoomUserDto } from 'src/user/dto/user.dto';
+import { Socket } from 'socket.io';
 
 @Injectable()
 export class RoomService {
-  roomList: Array<Room> = [];
+  private roomList: Array<Room> = [];
 
+  private clientMap = new Map<string, Socket>(); // 用于存储客户端信息
+
+  setClientByUserName(userName: string, client: Socket) {
+    this.clientMap.set(userName, client);
+  }
+  getClientByUserName(userName: string): Socket {
+    return this.clientMap.get(userName);
+  }
+  deleteClientByUserName(userName: string) {
+    this.clientMap.delete(userName);
+  }
   // 生成随机的九位数 roomId，包含字母和数字
   private generateRandomId(): string {
     const characters =
@@ -117,5 +129,9 @@ export class RoomService {
     return this.roomList.map((room) => {
       return new RoomReturnDto(room);
     });
+  }
+
+  getRoomById(id: string): Room | undefined {
+    return this.roomList.find((room) => room.id === id);
   }
 }

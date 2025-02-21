@@ -5,16 +5,18 @@ import { User } from './user/entities/user.entity';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AllExceptionsFilter, TransformInterceptor } from './app.filter';
 import { RoomModule } from './room/room.module';
+import { mysqlUrl } from './url';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'root',
-      database: 'coup',
+      host: mysqlUrl.host,
+      port: mysqlUrl.port,
+      username: mysqlUrl.username,
+      password: mysqlUrl.password,
+      database: mysqlUrl.database,
       entities: [User], // 实体
       retryDelay: 500,
       retryAttempts: 10,
@@ -23,6 +25,7 @@ import { RoomModule } from './room/room.module';
     }),
     UserModule,
     RoomModule,
+    ScheduleModule.forRoot(), // 导入并初始化 ScheduleModule
   ],
   providers: [
     {
