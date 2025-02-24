@@ -4,11 +4,11 @@ export class Room {
   //这是一个准备房间的
   id: string; //多的
   roomName: string;
-  playerCount: number;
+  playerCount: number; //房间人数
   isPublic: boolean;
   password: string | null;
   owner: CommonUserDto;
-  players: Array<ReadyRoomUserDto>; //多的
+  players: Array<ReadyRoomUserDto>; //实际加入的玩家
   courtDeck: Array<number>; //[2, 2, 2, 2, 2, 5], //牌堆牌数
 
   constructor(createRoomDto: CreateRoomDto) {

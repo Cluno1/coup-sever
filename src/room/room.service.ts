@@ -12,6 +12,7 @@ export class RoomService {
   private clientMap = new Map<string, Socket>(); // 用于存储客户端信息
 
   setClientByUserName(userName: string, client: Socket) {
+    this.deleteClientByUserName(userName);
     this.clientMap.set(userName, client);
   }
   getClientByUserName(userName: string): Socket {
@@ -20,6 +21,17 @@ export class RoomService {
   deleteClientByUserName(userName: string) {
     this.clientMap.delete(userName);
   }
+  // 遍历 Map，删除指定 Socket 对应的条目
+  deleteClientBySocket(targetSocket: Socket): boolean {
+    for (const [userName, socket] of this.clientMap.entries()) {
+      if (socket === targetSocket) {
+        this.clientMap.delete(userName); // 删除对应的条目
+        return true; // 返回 true 表示找到并删除了
+      }
+    }
+    return false; // 返回 false 表示未找到
+  }
+
   // 生成随机的九位数 roomId，包含字母和数字
   private generateRandomId(): string {
     const characters =
@@ -121,6 +133,9 @@ export class RoomService {
           isAllReady = false;
         }
       });
+    }
+    if (room.players.length < room.playerCount) {
+      isAllReady = false;
     }
     return isAllReady;
   }

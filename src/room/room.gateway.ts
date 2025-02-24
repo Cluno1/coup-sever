@@ -17,7 +17,14 @@ import { clientMessage, serverMessage } from './room.message';
 import { webSocketUrl } from 'src/url';
 import { RoomMessageService } from './room.roomMessage.service';
 import { Actions, Blocks, Character, Period } from './entities/room.entity';
-import { assassinate, coup, victimKilled } from './room.actRule';
+import {
+  assassinate,
+  coup,
+  examineTrue,
+  exchange,
+  judgeGameOver,
+  victimKilled,
+} from './room.actRule';
 
 @WebSocketGateway({
   namespace: 'room',
@@ -82,6 +89,21 @@ export class RoomGateway {
     } else {
       client.emit(result.type, result.error); // 发送失败消息
     }
+  }
+
+  //当用户重连,需要发送这个到map
+  @SubscribeMessage(serverMessage.setClientToMap)
+  handleSetClientToMap(
+    @MessageBody() data: { userName: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.roomService.setClientByUserName(data.userName, client);
+  }
+
+  // 当客户端断开时自动触发
+  async handleDisconnect(client: Socket) {
+    // 从 Map 中移除用户
+    this.roomService.deleteClientBySocket(client);
   }
 
   @SubscribeMessage(serverMessage.setReady)
@@ -462,6 +484,7 @@ export class RoomGateway {
       victimKilled(actor, challenger, data.character);
     }
 
+    judgeGameOver(rm);
     rm.challengeArray = [];
     rm.actionRecord.challengeConclusion = null;
 
@@ -596,6 +619,7 @@ export class RoomGateway {
     } else {
       assassinate(rm, data.character);
     }
+    judgeGameOver(rm);
 
     //结果已经完毕 让下一个玩家行动
     this.roomMessageService.setNextPlayerAct(rm.id);
@@ -609,12 +633,54 @@ export class RoomGateway {
   }
 
   @SubscribeMessage(serverMessage.examineConclusion)
-  handleExamineConclusion() {
-    //TODO
+  handleExamineConclusion(
+    @MessageBody()
+    data: {
+      roomId: string;
+      isExamine: boolean;
+    },
+  ) {
+    console.log(data, 'examineConclusion');
+    const rm = this.roomMessageService.getRoomMessageById(data.roomId);
+
+    if (data.isExamine) {
+      if (
+        rm.actionRecord.actConclusion &&
+        rm.actionRecord.actionName === Actions.Examine
+      ) {
+        examineTrue(rm);
+      }
+    }
+    //结果已经完毕 让下一个玩家行动
+    this.roomMessageService.setNextPlayerAct(rm.id);
+    //发送新的对局消息
+    this.server
+      .to(data.roomId)
+      .emit(clientMessage.actionRecord, { actionRecord: rm.actionRecord });
+    this.server
+      .to(data.roomId)
+      .emit(clientMessage.roomBase, { roomBase: rm.roomBase });
   }
 
   @SubscribeMessage(serverMessage.exchangeConclusion)
-  handleExchangeConclusion() {
-    //TODO
+  handleExchangeConclusion(
+    @MessageBody()
+    data: {
+      roomId: string;
+      newCharacterArray: Array<Character>;
+    },
+  ) {
+    console.log(data, 'exchangeConclusion');
+    const rm = this.roomMessageService.getRoomMessageById(data.roomId);
+    exchange(rm, data.newCharacterArray);
+    //结果已经完毕 让下一个玩家行动
+    this.roomMessageService.setNextPlayerAct(rm.id);
+    //发送新的对局消息
+    this.server
+      .to(data.roomId)
+      .emit(clientMessage.actionRecord, { actionRecord: rm.actionRecord });
+    this.server
+      .to(data.roomId)
+      .emit(clientMessage.roomBase, { roomBase: rm.roomBase });
   }
 }

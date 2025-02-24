@@ -1,9 +1,22 @@
 import {
+  Actions,
   Character,
   Player,
   RoomBase,
   RoomMessage,
 } from './entities/room.entity';
+
+export function judgeGameOver(rm: RoomMessage) {
+  let deadNum = 0;
+  rm.players.forEach((p) => {
+    if (p.isDead || p.characterCardNum <= 0 || p.characterCards.length <= 0) {
+      deadNum++;
+    }
+  });
+  if (deadNum + 1 >= rm.roomBase.playerNum) {
+    rm.roomBase.gameOver = true;
+  }
+}
 
 /**
  *Duke,
@@ -210,39 +223,20 @@ export function steal(room: RoomMessage) {
 }
 
 /**
- * 行动玩家更换一张卡牌
- * @param room 房间信息
- * @param oldCharacter 不要的卡
- * @param newCharacter 新的卡
- */
-export function exchange1(
-  room: RoomMessage,
-  oldCharacter: Character,
-  newCharacter: Character,
-) {
-  const player = getPlayerById(room.players, room.actionRecord.actionPlayerId);
-  let isFound = false;
-  player.characterCards.map((cardIndex) => {
-    if (cardIndex === getCharacterIndexByName(oldCharacter)) {
-      if (!isFound) {
-        return newCharacter;
-      }
-      isFound = true;
-      return cardIndex;
-    }
-    return cardIndex;
-  });
-}
-/**
  * 交换手牌行动，传入的是数组，该数组会直接替换到受击玩家手牌
  * @param room 房间信息
  * @param newCharacterArray  传入留下的手牌的角色名称，直接更新到手牌就好 传入的可以是一张
  */
-export function exchange2(
+export function exchange(
   room: RoomMessage,
   newCharacterArray: Array<Character>,
 ) {
-  const player = getPlayerById(room.players, room.actionRecord.actionPlayerId);
+  let player: Player;
+  if (room.actionRecord.actionName === Actions.Exchange1) {
+    player = getPlayerById(room.players, room.actionRecord.actionPlayerId);
+  } else {
+    player = getPlayerById(room.players, room.actionRecord.victimPlayerId);
+  }
   player.characterCards = newCharacterArray.map((c) => {
     return getCharacterIndexByName(c);
   });

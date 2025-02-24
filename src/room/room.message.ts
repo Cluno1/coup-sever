@@ -4,6 +4,7 @@ export const serverMessage = {
   sendMessage: 'sendMessage',
   setReady: 'setReady',
   setUnready: 'setUnready',
+  setClientToMap: 'setClientToMap', //当用户重连,需要发送这个到map
   ////////////////////////////////
   getOwner: 'getOwner', //获取到带有卡牌的player玩家信息
   getOtherPlayers: 'getOtherPlayers',
@@ -26,10 +27,33 @@ export const serverMessage = {
   block: 'block', //玩家提交阻止的信息
   /**
    * 当质疑失败或行动失败，玩家需要提交一个势力并失去。
+   * data: {
+      playerId: number;
+      roomId: string;
+      character: Character | null; //失去的势力
+    }
    */
-  challengeKilled: 'challengeKilled', // 当质疑失败或行动失败，玩家需要提交一个势力并失去
+  challengeKilled: 'challengeKilled',
+  /**
+   * data: {
+      roomId: string;
+      character: Character;
+    },
+   */
   coupOrAssassinateConclusion: 'coupOrAssassinateConclusion', //玩家提交被coup后选择失去的角色
+  /**
+   * data: {
+      roomId: string;
+      isExamine: boolean;
+    },
+   */
   examineConclusion: 'examineConclusion',
+  /**
+   * data: {
+      roomId: string;
+      newCharacterArray: Array<Character>;
+    },
+   */
   exchangeConclusion: 'exchangeConclusion',
 };
 
