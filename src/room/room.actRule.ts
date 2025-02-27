@@ -6,16 +6,25 @@ import {
   RoomMessage,
 } from './entities/room.entity';
 
-export function judgeGameOver(rm: RoomMessage) {
+export function judgeGameOver(rm: RoomMessage): boolean {
+  if (rm.roomBase.gameOver) {
+    return;
+  }
   let deadNum = 0;
+  let winnerId = -1;
   rm.players.forEach((p) => {
     if (p.isDead || p.characterCardNum <= 0 || p.characterCards.length <= 0) {
       deadNum++;
+    } else {
+      winnerId = p.id;
     }
   });
   if (deadNum + 1 >= rm.roomBase.playerNum) {
     rm.roomBase.gameOver = true;
+    rm.roomBase.winnerId = winnerId;
+    return true;
   }
+  return false;
 }
 
 /**
@@ -136,6 +145,9 @@ export function victimKilled(
   victim: Player,
   character: Character | null,
 ) {
+  if (victim.characterCardNum <= 0) {
+    return;
+  }
   victim.characterCardNum--;
   if (victim.characterCardNum <= 0) {
     victim.isDead = true;
@@ -152,6 +164,7 @@ export function victimKilled(
       if (c === getCharacterIndexByName(character)) {
         if (!find) {
           find = true;
+        } else {
           array.push(c);
         }
       } else {
@@ -183,6 +196,7 @@ export function conversion(room: RoomMessage) {
   if (room.actionRecord.victimPlayerId === room.actionRecord.actionPlayerId) {
     player.allegiance = !player.allegiance;
     player.coin -= 1;
+    room.roomBase.treasuryReserve += 1;
   } else {
     const victim = getPlayerById(
       room.players,
@@ -190,6 +204,7 @@ export function conversion(room: RoomMessage) {
     );
     victim.allegiance = !victim.allegiance;
     player.coin -= 2;
+    room.roomBase.treasuryReserve += 2;
   }
 }
 
@@ -231,12 +246,8 @@ export function exchange(
   room: RoomMessage,
   newCharacterArray: Array<Character>,
 ) {
-  let player: Player;
-  if (room.actionRecord.actionName === Actions.Exchange1) {
-    player = getPlayerById(room.players, room.actionRecord.actionPlayerId);
-  } else {
-    player = getPlayerById(room.players, room.actionRecord.victimPlayerId);
-  }
+  const player = getPlayerById(room.players, room.actionRecord.victimPlayerId);
+
   player.characterCards = newCharacterArray.map((c) => {
     return getCharacterIndexByName(c);
   });

@@ -55,6 +55,7 @@ export const serverMessage = {
     },
    */
   exchangeConclusion: 'exchangeConclusion',
+  deleteRoom: 'deleteRoom', //删除房间
 };
 
 export const clientMessage = {
@@ -72,4 +73,5 @@ export const clientMessage = {
   actionRecord: 'actionRecord', //发送对局记录
   owner: 'owner', //返回owner玩家的信息
   challengeIdArray: 'challengeIdArray', //这个返回质疑的玩家Id数组
+  deleteRoomOk: 'deleteRoomOk', //删除房间成功
 };

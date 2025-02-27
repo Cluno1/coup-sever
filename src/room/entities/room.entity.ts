@@ -1,8 +1,8 @@
 import { CommonUserDto, ReadyRoomUserDto } from 'src/user/dto/user.dto';
-import { CreateRoomDto } from '../dto/room.dto';
+import { CreateRoomDto, PlayerDto } from '../dto/room.dto';
 export class Room {
   //这是一个准备房间的
-  id: string; //多的
+  id: string;
   roomName: string;
   playerCount: number; //房间人数
   isPublic: boolean;
@@ -90,8 +90,8 @@ export class Player {
 }
 
 export class ChallengeConclusion {
-  challenger: Player; //质疑的玩家
-  actor: Player; //行动的玩家
+  challenger: PlayerDto; //质疑的玩家
+  actor: PlayerDto; //行动的玩家
   actorCharacter: Character; //行动玩家声明的角色
   isSuccess: boolean; //是否成功质疑
   constructor(
@@ -100,8 +100,8 @@ export class ChallengeConclusion {
     actorCharacter: Character,
     isSuccess: boolean,
   ) {
-    this.actor = actor;
-    this.challenger = challenger;
+    this.actor = new PlayerDto(actor);
+    this.challenger = new PlayerDto(challenger);
     this.actorCharacter = actorCharacter;
     this.isSuccess = isSuccess;
   }

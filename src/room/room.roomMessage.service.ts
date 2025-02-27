@@ -28,6 +28,16 @@ import {
 @Injectable()
 export class RoomMessageService {
   private roomMessageList: Array<RoomMessage> = [];
+
+  //清除一个房间
+  deleteRoomMessage(roomId: string) {
+    this.roomMessageList = this.roomMessageList.filter((rm) => {
+      if (rm.id === roomId) {
+        return false;
+      }
+      return true;
+    });
+  }
   //初始化 roomMessage
   roomMessageIndex(room: Room) {
     const roomMessage = new RoomMessage();
@@ -167,12 +177,6 @@ export class RoomMessageService {
           break;
         case Actions.Exchange2:
           if (data.character === Character.Ambassador) {
-            if (
-              data.actionVictimId <= 0 ||
-              data.actionVictimId === ar.actionPlayerId
-            ) {
-              throw new Error('player not right');
-            }
             ar.period = Period.ActChallenge;
             ar.victimPlayerId = data.actionVictimId;
             ar.character = data.character;
@@ -227,6 +231,7 @@ export class RoomMessageService {
    * @param roomId 房间id
    */
   directJudgeActConclusion(roomId: string) {
+    console.log('结果判定');
     const roomMessage = this.getRoomMessageById(roomId);
     roomMessage.actionRecord.period = Period.ActConclusion;
     if (!roomMessage.actionRecord.actConclusion) {
@@ -278,6 +283,7 @@ export class RoomMessageService {
       default:
         break;
     }
+    console.log('结果已经被更新');
   }
 
   //设置下一个玩家行动
@@ -300,6 +306,11 @@ export class RoomMessageService {
       p = lessPlayers.shift();
       rm.roomBase.round++; //如果是在低id的数组找人，意味着新的一回合了
     }
+    if (!p?.id) {
+      //已经没有下一个人了,就是行动结束了
+      console.log('已经没有下一个人了,就是行动结束了');
+      return;
+    }
 
     rm.actionRecord = new ActionRecord(); //初始化新的action record
     rm.actionRecord.actionPlayerId = p.id;
@@ -313,6 +324,7 @@ export class RoomMessageService {
    * @param roomId  id
    */
   handleToChallengeConclusion(roomId: string) {
+    console.log('come to 质疑结果阶段');
     const rm = this.getRoomMessageById(roomId);
     function isCharacterIsInPlayer(player: Player, character: Character) {
       return player.characterCards.some(
@@ -322,10 +334,12 @@ export class RoomMessageService {
 
     //判定质疑结果，
     //首先判定是block challenge 还是 act challenge
-    const challenger = getPlayerById(rm.players, rm.challengeArray.shift());
+    const challenger = getPlayerById(rm.players, rm.challengeArray.shift()); //挑战者
+    challenger.challenge++;
     let actor: Player, isSuccess: boolean, cName: Character;
 
     if (rm.actionRecord.period === Period.ActChallenge) {
+      console.log('come to 质疑结果阶段 --行动质疑');
       actor = getPlayerById(rm.players, rm.actionRecord.actionPlayerId);
       if (rm.actionRecord.actionName === Actions.Embezzlement) {
         //独吞，另外判定
@@ -343,6 +357,7 @@ export class RoomMessageService {
       }
     } else if (rm.actionRecord.period === Period.BlockChallenge) {
       //判定阻止玩家被质疑
+      console.log('come to 质疑结果阶段 --阻止 质疑');
       actor = getPlayerById(rm.players, rm.actionRecord.victimPlayerId);
       cName = rm.actionRecord.victimCharacter;
       isSuccess = !isCharacterIsInPlayer(actor, cName);

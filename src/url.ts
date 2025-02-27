@@ -1,5 +1,5 @@
 export const clientUrl = {
-  originAllow: 'http://192.168.8.82:3001',
+  originAllow: ['http://192.168.198.82:3001', 'http://localhost:3001'],
 };
 
 export const mysqlUrl = {
@@ -11,5 +11,5 @@ export const mysqlUrl = {
 };
 
 export const webSocketUrl = {
-  originAllow: 'http://192.168.8.82:3001',
+  originAllow: ['http://192.168.198.82:3001', 'http://localhost:3001'],
 };

@@ -7,8 +7,7 @@ import { Socket } from 'socket.io';
 
 @Injectable()
 export class RoomService {
-  private roomList: Array<Room> = [];
-
+  private roomList: Array<Room> = []; //准备房间
   private clientMap = new Map<string, Socket>(); // 用于存储客户端信息
 
   setClientByUserName(userName: string, client: Socket) {
@@ -104,6 +103,15 @@ export class RoomService {
     } else {
       return { error: 'fail to leave room', type: clientMessage.leaveRoomFail };
     }
+  }
+
+  deleteRoom(roomId: string) {
+    this.roomList = this.roomList.filter((r) => {
+      if (r.id === roomId) {
+        return false;
+      }
+      return true;
+    });
   }
 
   getPlayersByRoomId(id: string) {
