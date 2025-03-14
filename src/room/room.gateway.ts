@@ -697,6 +697,9 @@ export class RoomGateway {
     if (rm === undefined) {
       return;
     }
+    if (rm.actionRecord.period !== Period.ActConclusion) {
+      return;
+    }
     if (rm.actionRecord.actionName === Actions.Coup) {
       coup(rm, data.character);
     } else {
@@ -769,6 +772,8 @@ export class RoomGateway {
       return;
     }
     exchange(rm, data.newCharacterArray);
+    //TODO
+
     //结果已经完毕 让下一个玩家行动
     this.roomMessageService.setNextPlayerAct(rm.id);
     //发送新的对局消息

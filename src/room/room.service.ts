@@ -58,6 +58,24 @@ export class RoomService {
     return newId;
   }
 
+  /**
+   * 返回房间id数组
+   * @param ownerName 房主名字
+   * @returns 房间id数组
+   */
+  findRoomByOwnerName(ownerName: string): Array<string> {
+    return this.roomList
+      .filter((room) => {
+        if (room.owner.name === ownerName) {
+          console.log('寻找到有相同的用户要创建房间');
+          return true;
+        }
+        return false;
+      })
+      .map((room) => {
+        return room.id;
+      });
+  }
   createRoom(roomDto: CreateRoomDto): RoomReturnDto {
     const room = new Room(roomDto);
     room.id = this.getId(); //加入room id

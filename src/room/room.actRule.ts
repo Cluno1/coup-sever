@@ -1,5 +1,4 @@
 import {
-  Actions,
   Character,
   Player,
   RoomBase,
@@ -246,8 +245,8 @@ export function exchange(
   room: RoomMessage,
   newCharacterArray: Array<Character>,
 ) {
-  const player = getPlayerById(room.players, room.actionRecord.victimPlayerId);
-
+  console.log('进入交换行动');
+  const player = getPlayerById(room.players, room.actionRecord.actionPlayerId);
   player.characterCards = newCharacterArray.map((c) => {
     return getCharacterIndexByName(c);
   });
